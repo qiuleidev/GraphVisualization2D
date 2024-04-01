@@ -1,0 +1,4 @@
+Plugins/LibOGDF/ThirdParty/OGDF/Lib/Win32/Debug/VS2013/ogdf.lib filter=lfs diff=lfs merge=lfs -text
+Plugins/LibOGDF/ThirdParty/OGDF/Lib/Win64/Debug/VS2013/ogdf.lib filter=lfs diff=lfs merge=lfs -text
+Plugins/LibOGDF/ThirdParty/OGDF/Lib/Win64/Debug/VS2015/ogdf.lib filter=lfs diff=lfs merge=lfs -text
+Plugins/LibOGDF/ThirdParty/OGDF/Lib/Win64/Debug/VS2017/ogdf.lib filter=lfs diff=lfs merge=lfs -text
