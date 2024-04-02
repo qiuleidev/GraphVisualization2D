@@ -6,27 +6,30 @@
 #include "Graph2D.h"
 
 
-void FNode2D::draw(FVector actorLocation,UMaterial* defaultMaterial,double graphScale, float CoordinateScale,bool drawPointDefaultText, FString defaultText)
+void FNode2D::draw(FVector actorLocation,UMaterial* defaultMaterial,double graphScale, float CoordinateScale,bool drawPointDefaultText, FString defaultText, bool isAllNodesBelongsToClique, TArray<UInstancedStaticMeshComponent*> ISM)
 {
-	UStaticMeshComponent* uMeshComponent = getPointMeshComponent();
 	FVector2f scaleLocation  = node_info->PointLocation * CoordinateScale;
-	//设置组件默认静态网格体
-	UStaticMesh* mesh = node_info->PointMesh;
-	if (mesh == nullptr) {
-		FString spherePath = FString::Printf(TEXT("/Game/Shape/Shape_Sphere.Shape_Sphere"));
-		mesh = LoadObject<UStaticMesh>(nullptr, *spherePath);
-	}
-	UMaterial* material = node_info->PointMaterial;
-	if (material != nullptr)mesh->SetMaterial(0, material);
-	else mesh->SetMaterial(0, defaultMaterial);
-	uMeshComponent->SetStaticMesh(mesh);
+	////设置组件默认静态网格体
+	//UStaticMesh* mesh = node_info->PointMesh;
+	//if (mesh == nullptr) {
+	//	FString spherePath = FString::Printf(TEXT("/Game/Shape/Shape_Sphere.Shape_Sphere"));
+	//	mesh = LoadObject<UStaticMesh>(nullptr, *spherePath);
+	//}
+	//UMaterial* material = node_info->PointMaterial;
+	//if (material != nullptr)mesh->SetMaterial(0, material);
+	//else mesh->SetMaterial(0, defaultMaterial);
+	//uMeshComponent->SetStaticMesh(mesh);
 
-	//设置组件缩放
-	uMeshComponent->SetRelativeScale3D(node_info->PointMeshScale * graphScale);
+	////设置组件缩放
+	//uMeshComponent->SetRelativeScale3D(node_info->PointMeshScale * graphScale);
 
-	//设置组件位置
-	uMeshComponent->SetRelativeLocation(actorLocation + FVector(scaleLocation[0], scaleLocation[1], 0) * graphScale);
-
+	////设置组件位置
+	//uMeshComponent->SetRelativeLocation(actorLocation + FVector(scaleLocation[0], scaleLocation[1], 0) * graphScale);
+	FTransform tf;
+	tf.SetScale3D(node_info->PointMeshScale * graphScale);
+	tf.SetLocation(actorLocation + FVector(scaleLocation[0], scaleLocation[1], 0) * graphScale);
+	if(isAllNodesBelongsToClique)ISM[node_info->clique_id]->AddInstance(tf);
+	else ISM[node_info->clique_id+1]->AddInstance(tf);
 	UUserWidget*  widgetClass = TextComponent->GetUserWidgetObject();
 	// TextComponent->GetWidgetClass()得不到想要的指针！
 	UWidget_Text* widget = (UWidget_Text*)widgetClass;
@@ -56,8 +59,8 @@ void FNode2D::updatePointTextComponent(FVector CameraLocation)
 
 void FNode2D::updateScale(FVector actorLocation,float graphScale,float CoordinateScale)
 {
-	PointMeshComponent->SetRelativeScale3D(node_info->PointMeshScale * graphScale);
-	PointMeshComponent->SetRelativeLocation(actorLocation + FVector(node_info->PointLocation[0], node_info->PointLocation[1], 0)* CoordinateScale * graphScale);
+	//PointMeshComponent->SetRelativeScale3D(node_info->PointMeshScale * graphScale);
+	//PointMeshComponent->SetRelativeLocation(actorLocation + FVector(node_info->PointLocation[0], node_info->PointLocation[1], 0)* CoordinateScale * graphScale);
 	//TextRenderComponent->SetWorldSize(node_info->TextSize * graphScale);
 	//TextRenderComponent->SetWorldLocation(actorLocation + (FVector(node_info->PointLocation[0]* CoordinateScale, node_info->PointLocation[1]* CoordinateScale, node_info->PointMeshScale[2] * 100 + node_info->TextSize) + node_info->TextDisplacement) * graphScale);
 }
@@ -74,11 +77,11 @@ void FNode2D::updateDrawPointDefaultText(FString defaultText)
 
 void FNode2D::updatePointLocationX(float x, FVector actorLocation, double graphScale, float CoordinateScale)
 {
-	node_info->PointLocation[0] = x;
-	UStaticMeshComponent* uMeshComponent = getPointMeshComponent();
-	FVector2f scaleLocation = node_info->PointLocation * CoordinateScale;
-	//设置组件位置
-	uMeshComponent->SetRelativeLocation(actorLocation + FVector(scaleLocation[0], scaleLocation[1], 0) * graphScale);
+	//node_info->PointLocation[0] = x;
+	//UStaticMeshComponent* uMeshComponent = getPointMeshComponent();
+	//FVector2f scaleLocation = node_info->PointLocation * CoordinateScale;
+	////设置组件位置
+	//uMeshComponent->SetRelativeLocation(actorLocation + FVector(scaleLocation[0], scaleLocation[1], 0) * graphScale);
 	//设置文本组件位置
 	//TextRenderComponent->SetWorldLocation(actorLocation + (FVector(scaleLocation[0], scaleLocation[1], node_info->PointMeshScale[2] * 100 + node_info->TextSize) + node_info->TextDisplacement) * graphScale);
 }

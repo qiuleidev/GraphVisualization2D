@@ -48,7 +48,7 @@ private:
 
 public:
 
-	void draw(UWorld* world, FVector actorLocation, FVector startScale, FVector endScale,float graphScale,float CoordinateScale);
+	void draw(UWorld* world, TArray<FLinearColor> cliqueColor, FVector actorLocation, FVector startScale, FVector endScale,float graphScale,float CoordinateScale);
 
 public:
 

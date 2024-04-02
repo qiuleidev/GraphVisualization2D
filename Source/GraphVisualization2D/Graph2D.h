@@ -29,6 +29,8 @@
 #include "EnhancedInputSubsystems.h"
 #include <Components/SplineMeshComponent.h>
 #include <Components/SplineComponent.h>
+#include <Components/InstancedStaticMeshComponent.h>
+#include "DataReader.h"
 #include "Graph2D.generated.h"
 
 UENUM(BlueprintType)
@@ -106,11 +108,17 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = TextWidget)
 	TSubclassOf<class UUserWidget> textWidget;
 
+	//ISM
+	TArray<UInstancedStaticMeshComponent*> ISM;
+
+	//所有群组编号
+	TSet<int> cliqueID;
+	
+	//群组颜色
+	TArray<FLinearColor> cliqueColor;
 	//窗口对象
 	UPROPERTY()
 	UWidget_Graph2D* widget;
-	//Csv数据
-	//ReadCsv csvdata;
 
 	//选中的组件指针
 	UPROPERTY()
@@ -131,7 +139,8 @@ private:
 	USplineComponent* SplineComponent;
 
 public:
-	
+	void ReadData();
+
 	//位置随机,其他属性保持默认,G的新结点会同步创建
 	TSharedPtr<FNode2D> newNode();
 
@@ -148,8 +157,6 @@ public:
 
 	//创建随机图
 	void randomGraph(int nodeNum,int edgeNum);
-
-
 
 public:
 	//更新文本组件
@@ -172,6 +179,7 @@ private:
 	void initWidget();
 	void initController();
 	void initGraphData(ogdf::GraphAttributes& GraphAttributes);
+	void initISM();
 	void renderGraph();
 	void OnShowMouseCursorTriggered();
 	void OnLeftClickTriggered();

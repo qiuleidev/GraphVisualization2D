@@ -8,7 +8,7 @@ public class GraphVisualization2D : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","LibOGDF","ProceduralMeshComponent" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","LibOGDF","ProceduralMeshComponent","JSon","JsonUtilities"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "EnhancedInput" });
 

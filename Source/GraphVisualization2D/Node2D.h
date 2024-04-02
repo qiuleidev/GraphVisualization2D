@@ -36,17 +36,13 @@ private:
 	UPROPERTY()
 	AGraph2D* graphPtr = nullptr;
 
-	//点所用网格体组件
-	UPROPERTY()
-	UStaticMeshComponent* PointMeshComponent = nullptr;
-
 	UPROPERTY()
 	UWidgetComponent* TextComponent = nullptr;
 
 public:
 
 	//渲染点
-	void draw(FVector actorLocation,UMaterial* defaultMaterial,double graphScale,float CoordinateScale,bool drawPointDefaultText, FString defaultText);
+	void draw(FVector actorLocation,UMaterial* defaultMaterial,double graphScale,float CoordinateScale,bool drawPointDefaultText, FString defaultText,bool isAllNodesBelongsToClique,TArray<UInstancedStaticMeshComponent*> ISM);
 
 	//更新点组件
 	void updatePointTextComponent(FVector CameraLocation);
@@ -82,18 +78,6 @@ public:
 	void setGraphPtr(AGraph2D* ptr) {
 
 		graphPtr = ptr;
-
-	}
-
-	UStaticMeshComponent* getPointMeshComponent() {
-
-		return PointMeshComponent;
-
-	}
-
-	void setPointMeshComponent(UStaticMeshComponent* ptr) {
-
-		PointMeshComponent = ptr;
 
 	}
 

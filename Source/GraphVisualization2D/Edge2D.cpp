@@ -3,7 +3,7 @@
 
 #include "Edge2D.h"
 #include "Graph2D.h"
-void FEdge2D::draw(UWorld* world, FVector actorLocation, FVector startScale, FVector endScale, float graphScale, float CoordinateScale)
+void FEdge2D::draw(UWorld* world, TArray<FLinearColor> cliqueColor, FVector actorLocation, FVector startScale, FVector endScale, float graphScale, float CoordinateScale)
 {
 	AllPoints.Empty();
 	AllPoints.Add(edge_info->EndPoint[0]->node_info->PointLocation);
@@ -17,7 +17,8 @@ void FEdge2D::draw(UWorld* world, FVector actorLocation, FVector startScale, FVe
 		float dh = (h2 - h1) * 50;
 		FVector startLocation = FVector(AllPoints[i][0], AllPoints[i][1], 0) * CoordinateScale * graphScale + actorLocation + FVector(0,0,h1 * 50 + i * 1.0 / (AllPoints.Num()-1) * dh) * graphScale;
 		FVector endLocation = FVector(AllPoints[i + 1][0], AllPoints[i + 1][1], 0) * CoordinateScale * graphScale + actorLocation + FVector(0, 0, h1 * 50 + (i+1) * 1.0 / (AllPoints.Num()-1) * dh) * graphScale;
-		DrawDebugLine(world, startLocation, endLocation, FColor::Black, true, -1.0f, 0, edge_info->LineThickness * graphScale);
+		if(edge_info->EndPoint[0]->node_info->clique_id == -1)DrawDebugLine(world, startLocation, endLocation, FColor::White, true, -1.0f, 0, edge_info->LineThickness * graphScale);
+		else DrawDebugLine(world, startLocation, endLocation, cliqueColor[edge_info->EndPoint[0]->node_info->clique_id].ToFColor(true), true, -1.0f, 0, edge_info->LineThickness * graphScale);
 		FVector midLocation = (startLocation + endLocation) / 2;
 		if (edge_info->Text.Num() > i) {
 			UTextRenderComponent* edgeTextComponent = NewObject<UTextRenderComponent>(graphPtr, UTextRenderComponent::StaticClass());

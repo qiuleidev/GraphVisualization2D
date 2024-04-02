@@ -40,4 +40,5 @@ struct FNodeInformation2D : public FTableRowBase {
 	UPROPERTY(EditAnywhere)
 	FVector TextDisplacement = FVector(0, 0, 0);
 
+	int clique_id = -1;
 };

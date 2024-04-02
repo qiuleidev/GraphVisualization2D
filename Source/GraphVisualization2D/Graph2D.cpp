@@ -25,7 +25,8 @@ void AGraph2D::BeginPlay()
 	//GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorForObjects()
 	initWidget();
 	initController();
-	randomGraph(10, 20);
+	ReadData();
+	//randomGraph(10, 20);
 	renderGraph();
 	/*const int32 SplinePoints = SplineComponent->GetNumberOfSplinePoints();
 	// 遍历每个样条曲线的点
@@ -58,6 +59,29 @@ void AGraph2D::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	updateTextComponent();
+}
+
+void AGraph2D::ReadData()
+{
+	DataReader reader = DataReader("E:\\UE5Projects\\GraphVisualization2D\\GraphVisualization2D\\outData_true.json");
+	for (int i = 0; i < reader.points.size(); i++) {
+
+		TSharedPtr<FNodeInformation2D> node_info = MakeShared<FNodeInformation2D>();;
+
+		node_info->clique_id = reader.points[i].group_id;
+
+		node_info->Text = reader.points[i].lable;
+
+		newNode(node_info);
+	}
+	for (int i = 0; i < reader.lines.size(); i++) {
+
+		TSharedPtr<FNode2D> source = node[reader.lines[i].src_ind];
+
+		TSharedPtr<FNode2D> target = node[reader.lines[i].tar_ind];
+
+		newEdge(source, target);
+	}
 }
 
 TSharedPtr<FNode2D> AGraph2D::newNode()
@@ -226,7 +250,7 @@ void AGraph2D::renderGraph()
 		ogdf::GraphAttributes::nodeStyle |
 		ogdf::GraphAttributes::nodeTemplate);
 	initGraphData(GA);
-
+	initISM();
 	//渲染点
 	int k = 0;
 	for (auto p : G.nodes) {
@@ -244,15 +268,6 @@ void AGraph2D::renderGraph()
 			textComponent->SetWidgetClass(textWidget);
 			node[k]->setTextComponent(textComponent);
 		}
-		
-
-		//自定义点静态网格体组件
-		if (node[k]->getPointMeshComponent() == nullptr) {
-			UStaticMeshComponent* uMeshComponent = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass());
-			uMeshComponent->RegisterComponent();
-			SelectedNodeMap.Add(uMeshComponent, node[k]);
-			node[k]->setPointMeshComponent(uMeshComponent);
-		}
 
 		ogdf::node n = node[k]->getNodePtr();
 		node[k]->node_info->PointLocation = FVector2f(GA.x(n), GA.y(n));
@@ -262,10 +277,12 @@ void AGraph2D::renderGraph()
 		//绘制node
 		if (drawPointDefaultText) {
 			FString text = FString::Printf(TEXT("P%d"), k);
-			node[k++]->draw(GetActorLocation(), DefaultPointMaterial, graphScale, CoordinateScale, drawPointDefaultText, text);
+			if(cliqueID.Contains(-1))node[k++]->draw(GetActorLocation(), DefaultPointMaterial, graphScale, CoordinateScale, drawPointDefaultText, text,false,ISM);
+			else node[k++]->draw(GetActorLocation(), DefaultPointMaterial, graphScale, CoordinateScale, drawPointDefaultText, text, true, ISM);
 		}
 		else {
-			node[k++]->draw(GetActorLocation(), DefaultPointMaterial, graphScale, CoordinateScale, drawPointDefaultText,FString(""));
+			if (cliqueID.Contains(-1))node[k++]->draw(GetActorLocation(), DefaultPointMaterial, graphScale, CoordinateScale, drawPointDefaultText,FString(""),false,ISM);
+			else node[k++]->draw(GetActorLocation(), DefaultPointMaterial, graphScale, CoordinateScale, drawPointDefaultText, FString(""), true, ISM);
 		}
 	}
 
@@ -293,7 +310,7 @@ void AGraph2D::renderGraph()
 		
 		if (!EdgeMap.Contains(e))EdgeMap.Add(e, edge[k]);
 
-		edge[k]->draw(GetWorld(), GetActorLocation(), edge[k]->edge_info->EndPoint[0]->node_info->PointMeshScale, edge[k]->edge_info->EndPoint[1]->node_info->PointMeshScale, graphScale, CoordinateScale);
+		edge[k]->draw(GetWorld(),cliqueColor, GetActorLocation(), edge[k]->edge_info->EndPoint[0]->node_info->PointMeshScale, edge[k]->edge_info->EndPoint[1]->node_info->PointMeshScale, graphScale, CoordinateScale);
 		//GEngine->AddOnScreenDebugMessage(1, 10, FColor::Black, FString::Printf(TEXT("%f"), edge[k].edge_info.EndPoint[0].node_info.PointMeshScale[0]));
 		k++;
 	}
@@ -488,7 +505,7 @@ void AGraph2D::initGraphData(ogdf::GraphAttributes& GraphAttributes)
 	else if (layoutAlgorithm == ELayout::Value1) {
 		ogdf::FMMMLayout fmmm;
 		fmmm.useHighLevelOptions(true);
-		fmmm.unitEdgeLength(15.0);
+		fmmm.unitEdgeLength(150.0);
 		fmmm.newInitialPlacement(true);
 		fmmm.qualityVersusSpeed(ogdf::FMMMOptions::QualityVsSpeed::GorgeousAndEfficient);
 		fmmm.call(GraphAttributes);
@@ -545,6 +562,37 @@ void AGraph2D::initGraphData(ogdf::GraphAttributes& GraphAttributes)
 		SM.call(GraphAttributes);
 	}
 	
+}
+
+void AGraph2D::initISM()
+{
+	cliqueID.Empty();
+	ISM.Empty();
+	cliqueColor.Empty();
+	int k = 0;
+	for (auto p : G.nodes) {
+		cliqueID.Add(node[k++]->node_info->clique_id);
+	}
+	for (int i = 0; i < cliqueID.Num(); i++) {
+		float hue = (i * 1.0f / cliqueID.Num()) * 360.0f; // 分布在色相环上
+		float saturation = FMath::RandRange(0.6f, 0.8f); // 饱和度不要太高也不要太低
+		float value = FMath::RandRange(0.5f, 0.7f); // 明度不要太高也不要太低
+		FLinearColor color = FLinearColor::MakeFromHSV8(hue, saturation * 255, value * 255);
+		UInstancedStaticMeshComponent* InstancedMeshComponent = NewObject<UInstancedStaticMeshComponent>(this, FName(*FString::Printf(TEXT("ISM%d"), i)));
+		FString spherePath = FString::Printf(TEXT("/Game/Shape/Shape_Sphere.Shape_Sphere"));
+		UStaticMesh* mesh = LoadObject<UStaticMesh>(nullptr, *spherePath);
+		InstancedMeshComponent->SetStaticMesh(mesh);
+		InstancedMeshComponent->SetMaterial(0,DefaultPointMaterial);
+		InstancedMeshComponent->RegisterComponent();
+		InstancedMeshComponent->SetVectorParameterValueOnMaterials(FName(FString::Printf(TEXT("color"))),FVector(color.R,color.G,color.B));
+		ISM.Add(InstancedMeshComponent);
+		cliqueColor.Add(color);
+	}
+	if (cliqueID.Contains(-1))
+	{
+		ISM[0]->SetVectorParameterValueOnMaterials(FName(FString::Printf(TEXT("color"))), FVector(1, 1, 1));
+		cliqueColor.RemoveAt(0);
+	}
 }
 
 void AGraph2D::initWidget()
